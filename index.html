@@ -69,24 +69,23 @@
 
 <input type="text" id="modelo" placeholder="Modelo do aparelho">
 
-<!-- LINHAS DINÂMICAS -->
 <div id="linhas">
 
-  <!-- LINHA -->
+  <!-- PRIMEIRA LINHA -->
   <div class="bloco">
     <select>
       <option value="">Tipo da tela</option>
-      <option>Incell</option>
+      <option>Incell (Paralela)</option>
+      <option>Incell Intermediária</option>
+      <option>Incell Premium</option>
       <option>OLED</option>
+      <option>OLED Intermediária</option>
       <option>OLED Premium</option>
-      <option>OLED Master</option>
       <option value="outro">Outro (digitar)</option>
     </select>
 
     <input type="text" placeholder="Ou digite o nome da peça">
-
     <input type="tel" inputmode="decimal" placeholder="Preço da peça">
-
     <input type="tel" inputmode="decimal" placeholder="Mão de obra">
   </div>
 
@@ -120,10 +119,12 @@ function adicionarLinha() {
   bloco.innerHTML = `
     <select>
       <option value="">Tipo da tela</option>
-      <option>Incell</option>
+      <option>Incell (Paralela)</option>
+      <option>Incell Intermediária</option>
+      <option>Incell Premium</option>
       <option>OLED</option>
+      <option>OLED Intermediária</option>
       <option>OLED Premium</option>
-      <option>OLED Master</option>
       <option value="outro">Outro (digitar)</option>
     </select>
 
