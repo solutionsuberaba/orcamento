@@ -75,26 +75,26 @@
 
 <div class="bloco">
   <b>Incell</b>
-  <input type="number" placeholder="Preço da peça" id="incell">
-  <input type="number" placeholder="Mão de obra" id="mao_incell">
+  <input type="tel" inputmode="decimal" placeholder="Preço da peça" id="incell">
+  <input type="tel" inputmode="decimal" placeholder="Mão de obra" id="mao_incell">
 </div>
 
 <div class="bloco">
   <b>OLED Reduzida</b>
-  <input type="number" placeholder="Preço da peça" id="oled1">
-  <input type="number" placeholder="Mão de obra" id="mao_oled1">
+  <input type="tel" inputmode="decimal" placeholder="Preço da peça" id="oled1">
+  <input type="tel" inputmode="decimal" placeholder="Mão de obra" id="mao_oled1">
 </div>
 
 <div class="bloco">
   <b>OLED Premium</b>
-  <input type="number" placeholder="Preço da peça" id="oled2">
-  <input type="number" placeholder="Mão de obra" id="mao_oled2">
+  <input type="tel" inputmode="decimal" placeholder="Preço da peça" id="oled2">
+  <input type="tel" inputmode="decimal" placeholder="Mão de obra" id="mao_oled2">
 </div>
 
 <div class="bloco">
   <b>OLED Master</b>
-  <input type="number" placeholder="Preço da peça" id="oled3">
-  <input type="number" placeholder="Mão de obra" id="mao_oled3">
+  <input type="tel" inputmode="decimal" placeholder="Preço da peça" id="oled3">
+  <input type="tel" inputmode="decimal" placeholder="Mão de obra" id="mao_oled3">
 </div>
 
 <div class="botoes">
@@ -109,6 +109,19 @@
 <script>
 let textoFinal = "";
 
+function arredondar(valor) {
+  let final = valor % 10;
+  let resultado;
+
+  if (final <= 3) {
+    resultado = valor - final;
+  } else {
+    resultado = valor + (10 - final);
+  }
+
+  return Math.round(resultado);
+}
+
 function gerar() {
 
   let modelo = document.getElementById("modelo").value;
@@ -117,7 +130,9 @@ function gerar() {
     if (preco <= 0) return "";
 
     let total = (preco + mao) * 1.12;
-    return `${nome}: R$ ${total.toFixed(2)}\n`;
+    let final = arredondar(total);
+
+    return `${nome}: R$ ${final}\n`;
   }
 
   let texto = `Troca de tela - ${modelo}\n\n`;
