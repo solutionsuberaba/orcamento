@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Orçamento Assistência</title>
+
+<style>
+  body {
+    font-family: Arial;
+    max-width: 500px;
+    margin: auto;
+    padding: 20px;
+  }
+  input, button {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+  }
+  .bloco {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  .resultado {
+    background: #f1f1f1;
+    padding: 10px;
+    margin-top: 10px;
+    white-space: pre-line;
+  }
+</style>
+</head>
+
+<body>
+
+<h2>Gerar Orçamento</h2>
+
+<label>Modelo do aparelho:</label>
+<input type="text" id="modelo" placeholder="Ex: iPhone 11">
+
+<div class="bloco">
+  <b>Incell</b>
+  <input type="number" placeholder="Preço da peça" id="incell">
+  <input type="number" placeholder="Mão de obra" id="mao_incell">
+</div>
+
+<div class="bloco">
+  <b>OLED Reduzida</b>
+  <input type="number" placeholder="Preço da peça" id="oled1">
+  <input type="number" placeholder="Mão de obra" id="mao_oled1">
+</div>
+
+<div class="bloco">
+  <b>OLED Premium</b>
+  <input type="number" placeholder="Preço da peça" id="oled2">
+  <input type="number" placeholder="Mão de obra" id="mao_oled2">
+</div>
+
+<div class="bloco">
+  <b>OLED Master</b>
+  <input type="number" placeholder="Preço da peça" id="oled3">
+  <input type="number" placeholder="Mão de obra" id="mao_oled3">
+</div>
+
+<button onclick="gerar()">Gerar Orçamento</button>
+
+<div class="resultado" id="resultado"></div>
+
+<script>
+function gerar() {
+
+  let modelo = document.getElementById("modelo").value;
+
+  function calc(nome, preco, mao) {
+    if (preco <= 0) return "";
+
+    let total = (preco + mao) * 1.12;
+
+    return `${nome}: R$ ${total.toFixed(2)}\n`;
+  }
+
+  let texto = `Troca de tela - ${modelo}\n\n`;
+
+  texto += calc("Incell",
+    parseFloat(document.getElementById("incell").value) || 0,
+    parseFloat(document.getElementById("mao_incell").value) || 0
+  );
+
+  texto += calc("OLED Reduzida",
+    parseFloat(document.getElementById("oled1").value) || 0,
+    parseFloat(document.getElementById("mao_oled1").value) || 0
+  );
+
+  texto += calc("OLED Premium",
+    parseFloat(document.getElementById("oled2").value) || 0,
+    parseFloat(document.getElementById("mao_oled2").value) || 0
+  );
+
+  texto += calc("OLED Master",
+    parseFloat(document.getElementById("oled3").value) || 0,
+    parseFloat(document.getElementById("mao_oled3").value) || 0
+  );
+
+  texto += `\nGarantia de 90 dias\n`;
+  texto += `A diferença entre as telas é na qualidade de imagem\n`;
+  texto += `Serviço realizado em média de 2 horas`;
+
+  document.getElementById("resultado").innerText = texto;
+}
+</script>
+
+</body>
+</html>
