@@ -20,7 +20,7 @@
     text-align: center;
   }
 
-  input, button {
+  input, select, button {
     width: 100%;
     padding: 12px;
     margin: 6px 0;
@@ -42,10 +42,6 @@
     color: white;
     border: none;
     font-weight: bold;
-  }
-
-  button:active {
-    background: #0056b3;
   }
 
   .resultado {
@@ -73,29 +69,30 @@
 
 <input type="text" id="modelo" placeholder="Modelo do aparelho">
 
-<div class="bloco">
-  <b>Incell</b>
-  <input type="tel" inputmode="decimal" placeholder="Preço da peça" id="incell">
-  <input type="tel" inputmode="decimal" placeholder="Mão de obra" id="mao_incell">
+<!-- LINHAS DINÂMICAS -->
+<div id="linhas">
+
+  <!-- LINHA -->
+  <div class="bloco">
+    <select>
+      <option value="">Tipo da tela</option>
+      <option>Incell</option>
+      <option>OLED</option>
+      <option>OLED Premium</option>
+      <option>OLED Master</option>
+      <option value="outro">Outro (digitar)</option>
+    </select>
+
+    <input type="text" placeholder="Ou digite o nome da peça">
+
+    <input type="tel" inputmode="decimal" placeholder="Preço da peça">
+
+    <input type="tel" inputmode="decimal" placeholder="Mão de obra">
+  </div>
+
 </div>
 
-<div class="bloco">
-  <b>OLED Reduzida</b>
-  <input type="tel" inputmode="decimal" placeholder="Preço da peça" id="oled1">
-  <input type="tel" inputmode="decimal" placeholder="Mão de obra" id="mao_oled1">
-</div>
-
-<div class="bloco">
-  <b>OLED Premium</b>
-  <input type="tel" inputmode="decimal" placeholder="Preço da peça" id="oled2">
-  <input type="tel" inputmode="decimal" placeholder="Mão de obra" id="mao_oled2">
-</div>
-
-<div class="bloco">
-  <b>OLED Master</b>
-  <input type="tel" inputmode="decimal" placeholder="Preço da peça" id="oled3">
-  <input type="tel" inputmode="decimal" placeholder="Mão de obra" id="mao_oled3">
-</div>
+<button onclick="adicionarLinha()">➕ Adicionar opção</button>
 
 <div class="botoes">
   <button onclick="gerar()">Gerar</button>
@@ -111,51 +108,55 @@ let textoFinal = "";
 
 function arredondar(valor) {
   let final = valor % 10;
-  let resultado;
+  return final <= 3 ? Math.round(valor - final) : Math.round(valor + (10 - final));
+}
 
-  if (final <= 3) {
-    resultado = valor - final;
-  } else {
-    resultado = valor + (10 - final);
-  }
+function adicionarLinha() {
+  let container = document.getElementById("linhas");
 
-  return Math.round(resultado);
+  let bloco = document.createElement("div");
+  bloco.className = "bloco";
+
+  bloco.innerHTML = `
+    <select>
+      <option value="">Tipo da tela</option>
+      <option>Incell</option>
+      <option>OLED</option>
+      <option>OLED Premium</option>
+      <option>OLED Master</option>
+      <option value="outro">Outro (digitar)</option>
+    </select>
+
+    <input type="text" placeholder="Ou digite o nome da peça">
+    <input type="tel" inputmode="decimal" placeholder="Preço da peça">
+    <input type="tel" inputmode="decimal" placeholder="Mão de obra">
+  `;
+
+  container.appendChild(bloco);
 }
 
 function gerar() {
 
   let modelo = document.getElementById("modelo").value;
+  let blocos = document.querySelectorAll(".bloco");
 
-  function calc(nome, preco, mao) {
-    if (preco <= 0) return "";
+  let texto = `Troca de tela - ${modelo}\n\n`;
+
+  blocos.forEach(bloco => {
+    let select = bloco.querySelector("select").value;
+    let nomeManual = bloco.querySelectorAll("input")[0].value;
+    let preco = parseFloat(bloco.querySelectorAll("input")[1].value) || 0;
+    let mao = parseFloat(bloco.querySelectorAll("input")[2].value) || 0;
+
+    let nome = nomeManual || select;
+
+    if (!nome || preco <= 0) return;
 
     let total = (preco + mao) * 1.12;
     let final = arredondar(total);
 
-    return `${nome}: R$ ${final}\n`;
-  }
-
-  let texto = `Troca de tela - ${modelo}\n\n`;
-
-  texto += calc("Incell",
-    parseFloat(document.getElementById("incell").value) || 0,
-    parseFloat(document.getElementById("mao_incell").value) || 0
-  );
-
-  texto += calc("OLED Reduzida",
-    parseFloat(document.getElementById("oled1").value) || 0,
-    parseFloat(document.getElementById("mao_oled1").value) || 0
-  );
-
-  texto += calc("OLED Premium",
-    parseFloat(document.getElementById("oled2").value) || 0,
-    parseFloat(document.getElementById("mao_oled2").value) || 0
-  );
-
-  texto += calc("OLED Master",
-    parseFloat(document.getElementById("oled3").value) || 0,
-    parseFloat(document.getElementById("mao_oled3").value) || 0
-  );
+    texto += `${nome}: R$ ${final}\n`;
+  });
 
   texto += `\nGarantia de 90 dias\n`;
   texto += `A diferença entre as telas é na qualidade de imagem\n`;
@@ -176,10 +177,15 @@ function copiar() {
 }
 
 function limpar() {
-  document.querySelectorAll("input").forEach(input => input.value = "");
+  document.getElementById("modelo").value = "";
+  document.getElementById("linhas").innerHTML = "";
+  adicionarLinha();
   document.getElementById("resultado").innerText = "";
   textoFinal = "";
 }
+
+// inicia com 1 linha
+adicionarLinha();
 </script>
 
 </body>
