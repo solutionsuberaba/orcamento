@@ -2,108 +2,128 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="apple-mobile-web-app-capable" content="yes">
-
-<title>Orçamento Assistência</title>
+<title>Orçamento</title>
 
 <style>
-  body {
-    font-family: Arial;
-    margin: 0;
-    padding: 15px;
-    background: #f5f5f5;
-  }
+body {
+  font-family: Arial;
+  margin: 0;
+  background: #f5f5f5;
+}
 
-  h2 {
-    text-align: center;
-  }
+/* TELA 1 (EDIÇÃO) */
+#tela1 {
+  padding: 15px;
+}
 
-  input, select, button {
-    width: 100%;
-    padding: 12px;
-    margin: 6px 0;
-    font-size: 16px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
-  }
+input, select, button {
+  width: 100%;
+  padding: 12px;
+  margin: 6px 0;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
 
-  .bloco {
-    background: #fff;
-    border-radius: 10px;
-    padding: 10px;
-    margin-bottom: 10px;
-  }
+.bloco {
+  background: #fff;
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
 
-  button {
-    background: #007bff;
-    color: white;
-    border: none;
-    font-weight: bold;
-  }
+button {
+  background: #007bff;
+  color: white;
+  border: none;
+  font-weight: bold;
+}
 
-  .resultado {
-    background: #fff;
-    padding: 12px;
-    margin-top: 10px;
-    border-radius: 10px;
-    white-space: pre-line;
-  }
+/* TELA 2 (CLIENTE) */
+#tela2 {
+  display: none;
+  padding: 20px;
+  text-align: center;
+  background: #fff;
+  min-height: 100vh;
+}
 
-  .botoes {
-    display: flex;
-    gap: 10px;
-  }
+.titulo {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
 
-  .botoes button {
-    flex: 1;
-  }
+.modelo {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.opcao {
+  background: #f9f9f9;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 12px;
+}
+
+.nome {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.preco {
+  font-size: 22px;
+  color: #28a745;
+  margin-top: 5px;
+}
+
+.info {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #555;
+}
+
+.voltar {
+  margin-top: 20px;
+  background: #333;
+}
 </style>
 </head>
 
 <body>
 
+<!-- TELA 1 -->
+<div id="tela1">
+
 <h2>Gerar Orçamento</h2>
 
 <input type="text" id="modelo" placeholder="Modelo do aparelho">
 
-<div id="linhas">
-
-  <!-- PRIMEIRA LINHA -->
-  <div class="bloco">
-    <select>
-      <option value="">Tipo da tela</option>
-      <option>Incell (Paralela)</option>
-      <option>Incell Intermediária</option>
-      <option>Incell Premium</option>
-      <option>OLED</option>
-      <option>OLED Intermediária</option>
-      <option>OLED Premium</option>
-      <option value="outro">Outro (digitar)</option>
-    </select>
-
-    <input type="text" placeholder="Ou digite o nome da peça">
-    <input type="tel" inputmode="decimal" placeholder="Preço da peça">
-    <input type="tel" inputmode="decimal" placeholder="Mão de obra">
-  </div>
-
-</div>
+<div id="linhas"></div>
 
 <button onclick="adicionarLinha()">➕ Adicionar opção</button>
+<button onclick="gerar()">Gerar Orçamento</button>
 
-<div class="botoes">
-  <button onclick="gerar()">Gerar</button>
-  <button onclick="limpar()">Limpar</button>
 </div>
 
-<button onclick="copiar()">📋 Copiar Orçamento</button>
+<!-- TELA 2 -->
+<div id="tela2">
+  <div class="titulo">Orçamento</div>
+  <div class="modelo" id="modeloCliente"></div>
 
-<div class="resultado" id="resultado"></div>
+  <div id="listaOpcoes"></div>
+
+  <div class="info">
+    Garantia de 90 dias<br>
+    Diferença entre as telas é na qualidade de imagem<br>
+    Serviço realizado em média de 2 horas
+  </div>
+
+  <button class="voltar" onclick="voltar()">⬅ Voltar</button>
+</div>
 
 <script>
-let textoFinal = "";
 
 function arredondar(valor) {
   let final = valor % 10;
@@ -141,7 +161,8 @@ function gerar() {
   let modelo = document.getElementById("modelo").value;
   let blocos = document.querySelectorAll(".bloco");
 
-  let texto = `Troca de tela - ${modelo}\n\n`;
+  let lista = document.getElementById("listaOpcoes");
+  lista.innerHTML = "";
 
   blocos.forEach(bloco => {
     let select = bloco.querySelector("select").value;
@@ -156,37 +177,32 @@ function gerar() {
     let total = (preco + mao) * 1.12;
     let final = arredondar(total);
 
-    texto += `${nome}: R$ ${final}\n`;
+    let div = document.createElement("div");
+    div.className = "opcao";
+
+    div.innerHTML = `
+      <div class="nome">${nome}</div>
+      <div class="preco">R$ ${final}</div>
+    `;
+
+    lista.appendChild(div);
   });
 
-  texto += `\nGarantia de 90 dias\n`;
-  texto += `A diferença entre as telas é na qualidade de imagem\n`;
-  texto += `Serviço realizado em média de 2 horas`;
+  document.getElementById("modeloCliente").innerText = modelo;
 
-  textoFinal = texto;
-  document.getElementById("resultado").innerText = texto;
+  // troca de tela
+  document.getElementById("tela1").style.display = "none";
+  document.getElementById("tela2").style.display = "block";
 }
 
-function copiar() {
-  if (!textoFinal) {
-    alert("Gere o orçamento primeiro!");
-    return;
-  }
-
-  navigator.clipboard.writeText(textoFinal);
-  alert("Orçamento copiado!");
-}
-
-function limpar() {
-  document.getElementById("modelo").value = "";
-  document.getElementById("linhas").innerHTML = "";
-  adicionarLinha();
-  document.getElementById("resultado").innerText = "";
-  textoFinal = "";
+function voltar() {
+  document.getElementById("tela1").style.display = "block";
+  document.getElementById("tela2").style.display = "none";
 }
 
 // inicia com 1 linha
 adicionarLinha();
+
 </script>
 
 </body>
