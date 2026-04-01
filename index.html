@@ -12,11 +12,12 @@ body {
   background: #f5f5f5;
 }
 
-/* TELA 1 (EDIÇÃO) */
+/* TELA 1 */
 #tela1 {
   padding: 15px;
 }
 
+/* CAMPOS */
 input, select, button {
   width: 100%;
   padding: 12px;
@@ -40,19 +41,18 @@ button {
   font-weight: bold;
 }
 
-/* TELA 2 (CLIENTE) */
+/* TELA CLIENTE */
 #tela2 {
   display: none;
   padding: 20px;
-  text-align: center;
   background: #fff;
   min-height: 100vh;
+  text-align: center;
 }
 
 .titulo {
   font-size: 22px;
   font-weight: bold;
-  margin-bottom: 10px;
 }
 
 .modelo {
@@ -62,20 +62,18 @@ button {
 
 .opcao {
   background: #f9f9f9;
-  border-radius: 12px;
   padding: 15px;
+  border-radius: 12px;
   margin-bottom: 12px;
 }
 
 .nome {
   font-weight: bold;
-  font-size: 16px;
 }
 
 .preco {
   font-size: 22px;
-  color: #28a745;
-  margin-top: 5px;
+  color: green;
 }
 
 .info {
@@ -84,8 +82,15 @@ button {
   color: #555;
 }
 
-.voltar {
+.acoes {
   margin-top: 20px;
+}
+
+.acoes button {
+  margin-top: 10px;
+}
+
+.reset {
   background: #333;
 }
 </style>
@@ -109,21 +114,28 @@ button {
 
 <!-- TELA 2 -->
 <div id="tela2">
-  <div class="titulo">Orçamento</div>
-  <div class="modelo" id="modeloCliente"></div>
 
-  <div id="listaOpcoes"></div>
+<div class="titulo">Orçamento</div>
+<div class="modelo" id="modeloCliente"></div>
 
-  <div class="info">
-    Garantia de 90 dias<br>
-    Diferença entre as telas é na qualidade de imagem<br>
-    Serviço realizado em média de 2 horas
-  </div>
+<div id="listaOpcoes"></div>
 
-  <button class="voltar" onclick="voltar()">⬅ Voltar</button>
+<div class="info">
+Garantia de 90 dias<br>
+Diferença entre as telas é na qualidade de imagem<br>
+Serviço realizado em média de 2 horas
+</div>
+
+<div class="acoes">
+<button onclick="copiar()">📲 Copiar Orçamento</button>
+<button class="reset" onclick="novo()">🔄 Novo Orçamento</button>
+</div>
+
 </div>
 
 <script>
+
+let textoFinal = "";
 
 function arredondar(valor) {
   let final = valor % 10;
@@ -164,7 +176,10 @@ function gerar() {
   let lista = document.getElementById("listaOpcoes");
   lista.innerHTML = "";
 
+  let texto = `Troca de tela - ${modelo}\n\n`;
+
   blocos.forEach(bloco => {
+
     let select = bloco.querySelector("select").value;
     let nomeManual = bloco.querySelectorAll("input")[0].value;
     let preco = parseFloat(bloco.querySelectorAll("input")[1].value) || 0;
@@ -177,30 +192,42 @@ function gerar() {
     let total = (preco + mao) * 1.12;
     let final = arredondar(total);
 
+    // tela cliente
     let div = document.createElement("div");
     div.className = "opcao";
-
     div.innerHTML = `
       <div class="nome">${nome}</div>
       <div class="preco">R$ ${final}</div>
     `;
-
     lista.appendChild(div);
+
+    // texto copiar
+    texto += `${nome}: R$ ${final}\n`;
+
   });
+
+  texto += `\nGarantia de 90 dias\n`;
+  texto += `A diferença entre as telas é na qualidade de imagem\n`;
+  texto += `Serviço realizado em média de 2 horas`;
+
+  textoFinal = texto;
 
   document.getElementById("modeloCliente").innerText = modelo;
 
-  // troca de tela
   document.getElementById("tela1").style.display = "none";
   document.getElementById("tela2").style.display = "block";
 }
 
-function voltar() {
-  document.getElementById("tela1").style.display = "block";
-  document.getElementById("tela2").style.display = "none";
+function copiar() {
+  navigator.clipboard.writeText(textoFinal);
+  alert("Orçamento copiado!");
 }
 
-// inicia com 1 linha
+function novo() {
+  location.reload();
+}
+
+// inicia
 adicionarLinha();
 
 </script>
