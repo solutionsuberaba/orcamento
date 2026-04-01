@@ -12,12 +12,8 @@ body {
   background: #f5f5f5;
 }
 
-/* TELA 1 */
-#tela1 {
-  padding: 15px;
-}
+#tela1 { padding: 15px; }
 
-/* CAMPOS */
 input, select, button {
   width: 100%;
   padding: 12px;
@@ -41,7 +37,6 @@ button {
   font-weight: bold;
 }
 
-/* TELA CLIENTE */
 #tela2 {
   display: none;
   padding: 20px;
@@ -50,25 +45,11 @@ button {
   text-align: center;
 }
 
-.titulo {
-  font-size: 22px;
-  font-weight: bold;
-}
-
-.modelo {
-  color: #666;
-  margin-bottom: 20px;
-}
-
 .opcao {
   background: #f9f9f9;
   padding: 15px;
   border-radius: 12px;
   margin-bottom: 12px;
-}
-
-.nome {
-  font-weight: bold;
 }
 
 .preco {
@@ -82,17 +63,7 @@ button {
   color: #555;
 }
 
-.acoes {
-  margin-top: 20px;
-}
-
-.acoes button {
-  margin-top: 10px;
-}
-
-.reset {
-  background: #333;
-}
+.reset { background: #333; }
 </style>
 </head>
 
@@ -102,6 +73,12 @@ button {
 <div id="tela1">
 
 <h2>Gerar Orçamento</h2>
+
+<select id="tipoServico" onchange="mudarTipo()">
+  <option value="tela">Troca de Tela</option>
+  <option value="bateria">Troca de Bateria</option>
+  <option value="outro">Outro Serviço</option>
+</select>
 
 <input type="text" id="modelo" placeholder="Modelo do aparelho">
 
@@ -115,55 +92,61 @@ button {
 <!-- TELA 2 -->
 <div id="tela2">
 
-<div class="titulo">Orçamento</div>
-<div class="modelo" id="modeloCliente"></div>
+<h2 id="titulo"></h2>
+<div id="modeloCliente"></div>
 
 <div id="listaOpcoes"></div>
 
-<div class="info">
-Garantia de 90 dias<br>
-Diferença entre as telas é na qualidade de imagem<br>
-Serviço realizado em média de 2 horas
-</div>
+<div class="info" id="infoTexto"></div>
 
-<div class="acoes">
-<button onclick="copiar()">📲 Copiar Orçamento</button>
-<button class="reset" onclick="novo()">🔄 Novo Orçamento</button>
-</div>
+<button onclick="copiar()">📲 Copiar</button>
+<button class="reset" onclick="novo()">🔄 Novo</button>
 
 </div>
 
 <script>
 
 let textoFinal = "";
+let tipoAtual = "tela";
 
 function arredondar(valor) {
   let final = valor % 10;
   return final <= 3 ? Math.round(valor - final) : Math.round(valor + (10 - final));
 }
 
-function adicionarLinha() {
-  let container = document.getElementById("linhas");
+function mudarTipo() {
+  tipoAtual = document.getElementById("tipoServico").value;
+  document.getElementById("linhas").innerHTML = "";
+  adicionarLinha();
+}
 
+function adicionarLinha() {
+
+  let container = document.getElementById("linhas");
   let bloco = document.createElement("div");
   bloco.className = "bloco";
 
-  bloco.innerHTML = `
-    <select>
-      <option value="">Tipo da tela</option>
-      <option>Incell (Paralela)</option>
-      <option>Incell Intermediária</option>
-      <option>Incell Premium</option>
-      <option>OLED</option>
-      <option>OLED Intermediária</option>
-      <option>OLED Premium</option>
-      <option value="outro">Outro (digitar)</option>
-    </select>
-
-    <input type="text" placeholder="Ou digite o nome da peça">
-    <input type="tel" inputmode="decimal" placeholder="Preço da peça">
-    <input type="tel" inputmode="decimal" placeholder="Mão de obra">
-  `;
+  if (tipoAtual === "tela") {
+    bloco.innerHTML = `
+      <select>
+        <option value="">Tipo da tela</option>
+        <option>Incell (Paralela)</option>
+        <option>Incell Intermediária</option>
+        <option>Incell Premium</option>
+        <option>OLED</option>
+        <option>OLED Intermediária</option>
+        <option>OLED Premium</option>
+      </select>
+      <input type="tel" inputmode="decimal" placeholder="Preço da peça">
+      <input type="tel" inputmode="decimal" placeholder="Mão de obra">
+    `;
+  } else {
+    bloco.innerHTML = `
+      <input type="text" placeholder="Nome da peça/serviço">
+      <input type="tel" inputmode="decimal" placeholder="Preço da peça">
+      <input type="tel" inputmode="decimal" placeholder="Mão de obra">
+    `;
+  }
 
   container.appendChild(bloco);
 }
@@ -172,47 +155,63 @@ function gerar() {
 
   let modelo = document.getElementById("modelo").value;
   let blocos = document.querySelectorAll(".bloco");
-
   let lista = document.getElementById("listaOpcoes");
+
   lista.innerHTML = "";
 
-  let texto = `Troca de tela - ${modelo}\n\n`;
+  let titulo = document.getElementById("tipoServico").selectedOptions[0].text;
+  let texto = `${titulo} - ${modelo}\n\n`;
 
   blocos.forEach(bloco => {
 
-    let select = bloco.querySelector("select").value;
-    let nomeManual = bloco.querySelectorAll("input")[0].value;
-    let preco = parseFloat(bloco.querySelectorAll("input")[1].value) || 0;
-    let mao = parseFloat(bloco.querySelectorAll("input")[2].value) || 0;
+    let nome, preco, mao;
 
-    let nome = nomeManual || select;
+    if (tipoAtual === "tela") {
+      nome = bloco.querySelector("select").value;
+      preco = parseFloat(bloco.querySelectorAll("input")[0].value) || 0;
+      mao = parseFloat(bloco.querySelectorAll("input")[1].value) || 0;
+    } else {
+      nome = bloco.querySelectorAll("input")[0].value;
+      preco = parseFloat(bloco.querySelectorAll("input")[1].value) || 0;
+      mao = parseFloat(bloco.querySelectorAll("input")[2].value) || 0;
+    }
 
     if (!nome || preco <= 0) return;
 
     let total = (preco + mao) * 1.12;
     let final = arredondar(total);
 
-    // tela cliente
-    let div = document.createElement("div");
-    div.className = "opcao";
-    div.innerHTML = `
-      <div class="nome">${nome}</div>
-      <div class="preco">R$ ${final}</div>
+    lista.innerHTML += `
+      <div class="opcao">
+        ${nome}<br>
+        <div class="preco">R$ ${final}</div>
+      </div>
     `;
-    lista.appendChild(div);
 
-    // texto copiar
     texto += `${nome}: R$ ${final}\n`;
 
   });
 
-  texto += `\nGarantia de 90 dias\n`;
-  texto += `A diferença entre as telas é na qualidade de imagem\n`;
-  texto += `Serviço realizado em média de 2 horas`;
+  // TEXTO INTELIGENTE
+  let info = "Garantia de 90 dias<br>";
+
+  if (tipoAtual === "tela") {
+    info += "A diferença entre as telas é na qualidade de imagem<br>";
+  } else if (tipoAtual === "bateria") {
+    info += "A diferença entre as baterias é na qualidade e durabilidade<br>";
+  } else {
+    info += "Peças com variação de qualidade conforme fabricante<br>";
+  }
+
+  info += "Serviço realizado em média de 2 horas";
+
+  texto += `\n${info.replace(/<br>/g, "\n")}`;
 
   textoFinal = texto;
 
+  document.getElementById("titulo").innerText = titulo;
   document.getElementById("modeloCliente").innerText = modelo;
+  document.getElementById("infoTexto").innerHTML = info;
 
   document.getElementById("tela1").style.display = "none";
   document.getElementById("tela2").style.display = "block";
@@ -220,14 +219,13 @@ function gerar() {
 
 function copiar() {
   navigator.clipboard.writeText(textoFinal);
-  alert("Orçamento copiado!");
+  alert("Copiado!");
 }
 
 function novo() {
   location.reload();
 }
 
-// inicia
 adicionarLinha();
 
 </script>
