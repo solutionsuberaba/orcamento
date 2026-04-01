@@ -64,10 +64,38 @@ button {
 }
 
 .reset { background: #333; }
+
+/* CONFIG */
+.config {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+#configBox {
+  display: none;
+  position: fixed;
+  top: 60px;
+  right: 10px;
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
 </style>
 </head>
 
 <body>
+
+<div class="config" onclick="toggleConfig()">⚙️</div>
+
+<div id="configBox">
+  <label>Taxa (%)</label>
+  <input type="number" id="taxaInput">
+  <button onclick="salvarConfig()">Salvar</button>
+</div>
 
 <!-- TELA 1 -->
 <div id="tela1">
@@ -108,6 +136,20 @@ button {
 
 let textoFinal = "";
 let tipoAtual = "tela";
+let taxa = localStorage.getItem("taxa") || 12;
+
+document.getElementById("taxaInput").value = taxa;
+
+function toggleConfig() {
+  let box = document.getElementById("configBox");
+  box.style.display = box.style.display === "block" ? "none" : "block";
+}
+
+function salvarConfig() {
+  taxa = document.getElementById("taxaInput").value;
+  localStorage.setItem("taxa", taxa);
+  alert("Configuração salva!");
+}
 
 function arredondar(valor) {
   let final = valor % 10;
@@ -121,7 +163,6 @@ function mudarTipo() {
 }
 
 function adicionarLinha() {
-
   let container = document.getElementById("linhas");
   let bloco = document.createElement("div");
   bloco.className = "bloco";
@@ -178,7 +219,7 @@ function gerar() {
 
     if (!nome || preco <= 0) return;
 
-    let total = (preco + mao) * 1.12;
+    let total = (preco + mao) * (1 + taxa/100);
     let final = arredondar(total);
 
     lista.innerHTML += `
@@ -192,7 +233,6 @@ function gerar() {
 
   });
 
-  // TEXTO INTELIGENTE
   let info = "Garantia de 90 dias<br>";
 
   if (tipoAtual === "tela") {
@@ -206,7 +246,6 @@ function gerar() {
   info += "Serviço realizado em média de 2 horas";
 
   texto += `\n${info.replace(/<br>/g, "\n")}`;
-
   textoFinal = texto;
 
   document.getElementById("titulo").innerText = titulo;
