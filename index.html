@@ -6,83 +6,53 @@
 <title>Orçamento</title>
 
 <style>
-body {
-  font-family: Arial;
-  margin: 0;
-  background: #f5f5f5;
-}
-
-#tela1 { padding: 15px; }
+body { font-family: Arial; margin:0; background:#f5f5f5; }
+#tela1 { padding:15px; }
 
 input, select, button {
-  width: 100%;
-  padding: 12px;
-  margin: 6px 0;
-  font-size: 16px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+  width:100%; padding:12px; margin:6px 0;
+  font-size:16px; border-radius:8px; border:1px solid #ccc;
 }
 
 .bloco {
-  background: #fff;
-  padding: 10px;
-  border-radius: 10px;
-  margin-bottom: 10px;
+  background:#fff; padding:10px;
+  border-radius:10px; margin-bottom:10px;
 }
 
 button {
-  background: #007bff;
-  color: white;
-  border: none;
-  font-weight: bold;
+  background:#007bff; color:#fff;
+  border:none; font-weight:bold;
 }
 
 #tela2 {
-  display: none;
-  padding: 20px;
-  background: #fff;
-  min-height: 100vh;
-  text-align: center;
+  display:none; padding:20px;
+  background:#fff; min-height:100vh;
+  text-align:center;
 }
 
 .opcao {
-  background: #f9f9f9;
-  padding: 15px;
-  border-radius: 12px;
-  margin-bottom: 12px;
+  background:#f9f9f9;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:12px;
 }
 
-.preco {
-  font-size: 22px;
-  color: green;
-}
+.preco { font-size:22px; color:green; }
+.reset { background:#333; }
 
-.info {
-  margin-top: 20px;
-  font-size: 14px;
-  color: #555;
-}
-
-.reset { background: #333; }
-
-/* CONFIG */
 .config {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  font-size: 22px;
-  cursor: pointer;
+  position:fixed;
+  top:10px; right:10px;
+  font-size:22px; cursor:pointer;
 }
 
 #configBox {
-  display: none;
-  position: fixed;
-  top: 60px;
-  right: 10px;
-  background: white;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  display:none;
+  position:fixed;
+  top:60px; right:10px;
+  background:#fff; padding:15px;
+  border-radius:10px;
+  box-shadow:0 0 10px rgba(0,0,0,0.2);
 }
 </style>
 </head>
@@ -97,12 +67,11 @@ button {
   <button onclick="salvarConfig()">Salvar</button>
 </div>
 
-<!-- TELA 1 -->
 <div id="tela1">
 
 <h2>Gerar Orçamento</h2>
 
-<select id="tipoServico" onchange="mudarTipo()">
+<select id="tipoServico">
   <option value="tela">Troca de Tela</option>
   <option value="bateria">Troca de Bateria</option>
   <option value="outro">Outro Serviço</option>
@@ -112,12 +81,11 @@ button {
 
 <div id="linhas"></div>
 
-<button onclick="adicionarLinha()">➕ Adicionar opção</button>
-<button onclick="gerar()">Gerar Orçamento</button>
+<button onclick="adicionarLinha()">➕ Adicionar</button>
+<button onclick="gerar()">Gerar</button>
 
 </div>
 
-<!-- TELA 2 -->
 <div id="tela2">
 
 <h2 id="titulo"></h2>
@@ -125,7 +93,7 @@ button {
 
 <div id="listaOpcoes"></div>
 
-<div class="info" id="infoTexto"></div>
+<div id="infoTexto"></div>
 
 <button onclick="copiar()">📲 Copiar</button>
 <button class="reset" onclick="novo()">🔄 Novo</button>
@@ -134,134 +102,109 @@ button {
 
 <script>
 
-let textoFinal = "";
-let tipoAtual = "tela";
 let taxa = localStorage.getItem("taxa") || 12;
-
 document.getElementById("taxaInput").value = taxa;
 
-function toggleConfig() {
+function toggleConfig(){
   let box = document.getElementById("configBox");
-  box.style.display = box.style.display === "block" ? "none" : "block";
+  box.style.display = box.style.display === "block" ? "none":"block";
 }
 
-function salvarConfig() {
-  taxa = document.getElementById("taxaInput").value;
+function salvarConfig(){
+  taxa = parseFloat(document.getElementById("taxaInput").value) || 0;
   localStorage.setItem("taxa", taxa);
-  alert("Configuração salva!");
+  alert("Salvo!");
 }
 
-function arredondar(valor) {
-  let final = valor % 10;
-  return final <= 3 ? Math.round(valor - final) : Math.round(valor + (10 - final));
+function arredondar(v){
+  let f = v % 10;
+  return f <= 3 ? v - f : v + (10 - f);
 }
 
-function mudarTipo() {
-  tipoAtual = document.getElementById("tipoServico").value;
-  document.getElementById("linhas").innerHTML = "";
-  adicionarLinha();
-}
+function adicionarLinha(){
 
-function adicionarLinha() {
-  let container = document.getElementById("linhas");
   let bloco = document.createElement("div");
   bloco.className = "bloco";
 
-  if (tipoAtual === "tela") {
-    bloco.innerHTML = `
-      <select>
-        <option value="">Tipo da tela</option>
-        <option>Incell (Paralela)</option>
-        <option>Incell Intermediária</option>
-        <option>Incell Premium</option>
-        <option>OLED</option>
-        <option>OLED Intermediária</option>
-        <option>OLED Premium</option>
-      </select>
-      <input type="tel" inputmode="decimal" placeholder="Preço da peça">
-      <input type="tel" inputmode="decimal" placeholder="Mão de obra">
-    `;
-  } else {
-    bloco.innerHTML = `
-      <input type="text" placeholder="Nome da peça/serviço">
-      <input type="tel" inputmode="decimal" placeholder="Preço da peça">
-      <input type="tel" inputmode="decimal" placeholder="Mão de obra">
-    `;
-  }
+  bloco.innerHTML = `
+    <select>
+      <option value="">Tipo (ou deixe vazio)</option>
+      <option>Incell (Paralela)</option>
+      <option>Incell Intermediária</option>
+      <option>Incell Premium</option>
+      <option>OLED</option>
+      <option>OLED Intermediária</option>
+      <option>OLED Premium</option>
+    </select>
 
-  container.appendChild(bloco);
+    <input type="text" placeholder="Nome da peça (opcional)">
+    <input type="number" placeholder="Preço peça">
+    <input type="number" placeholder="Mão de obra">
+  `;
+
+  document.getElementById("linhas").appendChild(bloco);
 }
 
-function gerar() {
+function gerar(){
 
   let modelo = document.getElementById("modelo").value;
+  let tipo = document.getElementById("tipoServico").selectedOptions[0].text;
+
   let blocos = document.querySelectorAll(".bloco");
   let lista = document.getElementById("listaOpcoes");
-
   lista.innerHTML = "";
 
-  let titulo = document.getElementById("tipoServico").selectedOptions[0].text;
-  let texto = `${titulo} - ${modelo}\n\n`;
+  let texto = `${tipo} - ${modelo}\n\n`;
 
-  blocos.forEach(bloco => {
+  blocos.forEach(bloco=>{
 
-    let nome, preco, mao;
+    let select = bloco.querySelector("select").value;
+    let nomeManual = bloco.querySelectorAll("input")[0].value;
+    let preco = parseFloat(bloco.querySelectorAll("input")[1].value);
+    let mao = parseFloat(bloco.querySelectorAll("input")[2].value);
 
-    if (tipoAtual === "tela") {
-      nome = bloco.querySelector("select").value;
-      preco = parseFloat(bloco.querySelectorAll("input")[0].value) || 0;
-      mao = parseFloat(bloco.querySelectorAll("input")[1].value) || 0;
-    } else {
-      nome = bloco.querySelectorAll("input")[0].value;
-      preco = parseFloat(bloco.querySelectorAll("input")[1].value) || 0;
-      mao = parseFloat(bloco.querySelectorAll("input")[2].value) || 0;
-    }
+    if (isNaN(preco)) return;
 
-    if (!nome || preco <= 0) return;
+    let nome = nomeManual || select || "Serviço";
 
-    let total = (preco + mao) * (1 + taxa/100);
+    let total = (preco + (mao || 0)) * (1 + taxa/100);
     let final = arredondar(total);
 
-    lista.innerHTML += `
-      <div class="opcao">
-        ${nome}<br>
-        <div class="preco">R$ ${final}</div>
-      </div>
-    `;
+    let div = document.createElement("div");
+    div.className = "opcao";
+    div.innerHTML = `${nome}<br><div class="preco">R$ ${final}</div>`;
+    lista.appendChild(div);
 
     texto += `${nome}: R$ ${final}\n`;
 
   });
 
-  let info = "Garantia de 90 dias<br>";
+  let info = "Garantia de 90 dias\n";
 
-  if (tipoAtual === "tela") {
-    info += "A diferença entre as telas é na qualidade de imagem<br>";
-  } else if (tipoAtual === "bateria") {
-    info += "A diferença entre as baterias é na qualidade e durabilidade<br>";
-  } else {
-    info += "Peças com variação de qualidade conforme fabricante<br>";
+  if(tipo.includes("Tela")){
+    info += "Diferença na qualidade de imagem\n";
+  }else if(tipo.includes("Bateria")){
+    info += "Diferença na durabilidade\n";
   }
 
-  info += "Serviço realizado em média de 2 horas";
+  texto += "\n" + info;
+  document.getElementById("infoTexto").innerText = info;
 
-  texto += `\n${info.replace(/<br>/g, "\n")}`;
-  textoFinal = texto;
-
-  document.getElementById("titulo").innerText = titulo;
+  document.getElementById("titulo").innerText = tipo;
   document.getElementById("modeloCliente").innerText = modelo;
-  document.getElementById("infoTexto").innerHTML = info;
 
-  document.getElementById("tela1").style.display = "none";
-  document.getElementById("tela2").style.display = "block";
+  document.getElementById("tela1").style.display="none";
+  document.getElementById("tela2").style.display="block";
+
+  window.textoFinal = texto;
 }
 
-function copiar() {
-  navigator.clipboard.writeText(textoFinal);
+function copiar(){
+  navigator.clipboard.writeText(window.textoFinal);
   alert("Copiado!");
 }
 
-function novo() {
+function novo(){
   location.reload();
 }
 
