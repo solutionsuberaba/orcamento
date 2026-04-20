@@ -3,30 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Orçamento</title>
+<title>Orçamento Profissional</title>
 
 <style>
-body { font-family: Arial; margin:0; background:#f5f5f5; }
-#tela1 { padding:15px; }
+body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; color: #333; }
+#tela1, #tela2, #telaHistorico { padding:15px; max-width: 600px; margin: auto; }
 
 input, select, button {
   width:100%; padding:12px; margin:6px 0;
   font-size:16px; border-radius:8px; border:1px solid #ccc;
+  box-sizing: border-box;
 }
 
 .bloco {
   background:#fff; padding:10px;
   border-radius:10px; margin-bottom:10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 button {
   background:#007bff; color:#fff;
-  border:none; font-weight:bold;
+  border:none; font-weight:bold; cursor: pointer;
 }
 
-#tela2 {
-  display:none; padding:20px;
-  background:#fff; min-height:100vh;
+button:active { opacity: 0.8; }
+
+#tela2, #telaHistorico {
+  display:none; background:#fff; min-height:100vh;
   text-align:center;
 }
 
@@ -35,15 +38,17 @@ button {
   padding:15px;
   border-radius:12px;
   margin-bottom:12px;
+  border: 1px solid #eee;
 }
 
-.preco { font-size:22px; color:green; }
+.preco { font-size:22px; color:green; font-weight: bold; }
 .reset { background:#333; }
+.btn-hist { background: #6c757d; margin-top: 10px; }
 
 .config {
   position:fixed;
   top:10px; right:10px;
-  font-size:22px; cursor:pointer;
+  font-size:22px; cursor:pointer; z-index: 10;
 }
 
 #configBox {
@@ -53,6 +58,28 @@ button {
   background:#fff; padding:15px;
   border-radius:10px;
   box-shadow:0 0 10px rgba(0,0,0,0.2);
+  z-index: 11;
+}
+
+/* Estilos do Histórico */
+.item-historico {
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  padding: 10px;
+  position: relative;
+}
+.item-historico small { color: #888; }
+.item-historico b { color: #007bff; }
+#buscaHistorico {
+  margin-bottom: 15px;
+  border: 2px solid #007bff;
+}
+.btn-excluir {
+  background: #dc3545;
+  padding: 5px 10px;
+  width: auto;
+  font-size: 12px;
+  margin-top: 5px;
 }
 </style>
 </head>
@@ -63,46 +90,55 @@ button {
 
 <div id="configBox">
   <label>Taxa (%)</label>
-  <input type="number" id="taxaInput">
+  <input type="number" id="taxaInput" inputmode="numeric">
   <button onclick="salvarConfig()">Salvar</button>
 </div>
 
+<!-- TELA 1: FORMULÁRIO -->
 <div id="tela1">
+  <h2>Gerar Orçamento</h2>
 
-<h2>Gerar Orçamento</h2>
+  <select id="tipoServico">
+    <option value="tela">Troca de Tela</option>
+    <option value="bateria">Troca de Bateria</option>
+    <option value="outro">Outro Serviço</option>
+  </select>
 
-<select id="tipoServico">
-  <option value="tela">Troca de Tela</option>
-  <option value="bateria">Troca de Bateria</option>
-  <option value="outro">Outro Serviço</option>
-</select>
+  <input type="text" id="modelo" placeholder="Modelo do aparelho (ex: iPhone 13)">
 
-<input type="text" id="modelo" placeholder="Modelo do aparelho">
+  <div id="linhas"></div>
 
-<div id="linhas"></div>
-
-<button onclick="adicionarLinha()">➕ Adicionar</button>
-<button onclick="gerar()">Gerar</button>
-
+  <button onclick="adicionarLinha()">➕ Adicionar Opção</button>
+  <button onclick="gerar()">Gerar Orçamento</button>
+  <button class="btn-hist" onclick="verHistorico()">📜 Ver Histórico</button>
 </div>
 
+<!-- TELA 2: RESULTADO -->
 <div id="tela2">
+  <h2 id="titulo"></h2>
+  <div id="modeloCliente" style="font-weight: bold; margin-bottom: 20px;"></div>
 
-<h2 id="titulo"></h2>
-<div id="modeloCliente"></div>
+  <div id="listaOpcoes"></div>
 
-<div id="listaOpcoes"></div>
+  <div id="infoTexto" style="white-space: pre-line; margin: 20px 0; color: #666;"></div>
 
-<div id="infoTexto"></div>
+  <button onclick="copiar()">📲 Copiar para WhatsApp</button>
+  <button class="reset" onclick="novo()">🔄 Novo Orçamento</button>
+</div>
 
-<button onclick="copiar()">📲 Copiar</button>
-<button class="reset" onclick="novo()">🔄 Novo</button>
-
+<!-- TELA 3: HISTÓRICO -->
+<div id="telaHistorico">
+  <h2>Histórico</h2>
+  <input type="text" id="buscaHistorico" placeholder="🔍 Buscar por modelo ou data..." onkeyup="filtrarHistorico()">
+  
+  <div id="listaHistorico"></div>
+  
+  <button class="reset" onclick="novo()">⬅️ Voltar</button>
 </div>
 
 <script>
 
-let taxa = localStorage.getItem("taxa") || 12;
+let taxa = parseFloat(localStorage.getItem("taxa")) || 12;
 document.getElementById("taxaInput").value = taxa;
 
 function toggleConfig(){
@@ -113,7 +149,8 @@ function toggleConfig(){
 function salvarConfig(){
   taxa = parseFloat(document.getElementById("taxaInput").value) || 0;
   localStorage.setItem("taxa", taxa);
-  alert("Salvo!");
+  alert("Taxa configurada!");
+  toggleConfig();
 }
 
 function arredondar(v){
@@ -122,92 +159,154 @@ function arredondar(v){
 }
 
 function adicionarLinha(){
-
   let bloco = document.createElement("div");
   bloco.className = "bloco";
 
   bloco.innerHTML = `
     <select>
-      <option value="">Tipo (ou deixe vazio)</option>
+      <option value="">Tipo de Peça (ou opcional)</option>
       <option>Incell (Paralela)</option>
       <option>Incell Intermediária</option>
       <option>Incell Premium</option>
       <option>OLED</option>
       <option>OLED Intermediária</option>
       <option>OLED Premium</option>
+      <option>Original China</option>
+      <option>Retirada Original</option>
     </select>
-
-    <input type="text" placeholder="Nome da peça (opcional)">
-    <input type="number" placeholder="Preço peça">
-    <input type="number" placeholder="Mão de obra">
+    <input type="number" placeholder="Preço da peça" inputmode="numeric">
+    <input type="number" placeholder="Mão de obra" inputmode="numeric">
   `;
 
   document.getElementById("linhas").appendChild(bloco);
 }
 
 function gerar(){
-
   let modelo = document.getElementById("modelo").value;
   let tipo = document.getElementById("tipoServico").selectedOptions[0].text;
+
+  if(!modelo) { alert("Informe o modelo!"); return; }
 
   let blocos = document.querySelectorAll(".bloco");
   let lista = document.getElementById("listaOpcoes");
   lista.innerHTML = "";
 
-  let texto = `${tipo} - ${modelo}\n\n`;
+  let textoParaCopiar = `*${tipo} - ${modelo}*\n\n`;
+  let opcoesParaSalvar = [];
 
-  blocos.forEach(bloco=>{
-
+  blocos.forEach(bloco => {
     let select = bloco.querySelector("select").value;
-    let nomeManual = bloco.querySelectorAll("input")[0].value;
-    let preco = parseFloat(bloco.querySelectorAll("input")[1].value);
-    let mao = parseFloat(bloco.querySelectorAll("input")[2].value);
+    let inputs = bloco.querySelectorAll("input");
+    let precoPeca = parseFloat(inputs[0].value);
+    let maoDeObra = parseFloat(inputs[1].value) || 0;
 
-    if (isNaN(preco)) return;
+    if (isNaN(precoPeca)) return;
 
-    let nome = nomeManual || select || "Serviço";
-
-    let total = (preco + (mao || 0)) * (1 + taxa/100);
+    let nomeQualidade = select || "Serviço";
+    let total = (precoPeca + maoDeObra) * (1 + taxa/100);
     let final = arredondar(total);
 
+    // Adiciona na tela
     let div = document.createElement("div");
     div.className = "opcao";
-    div.innerHTML = `${nome}<br><div class="preco">R$ ${final}</div>`;
+    div.innerHTML = `<b>${nomeQualidade}</b><br><div class="preco">R$ ${final}</div>`;
     lista.appendChild(div);
 
-    texto += `${nome}: R$ ${final}\n`;
-
+    textoParaCopiar += `• ${nomeQualidade}: R$ ${final}\n`;
+    opcoesParaSalvar.push({nome: nomeQualidade, valor: final});
   });
 
-  let info = "Garantia de 90 dias\n";
+  if(opcoesParaSalvar.length === 0) { alert("Adicione valores!"); return; }
 
-  if(tipo.includes("Tela")){
-    info += "Diferença na qualidade de imagem\n";
-  }else if(tipo.includes("Bateria")){
-    info += "Diferença na durabilidade\n";
-  }
+  let info = "✅ Garantia de 90 dias\n";
+  if(tipo.includes("Tela")) info += "⚠️ Diferença na qualidade de imagem conforme a peça escolhida.\n";
+  if(tipo.includes("Bateria")) info += "🔋 Diferença na saúde e durabilidade da célula.\n";
 
-  texto += "\n" + info;
+  textoParaCopiar += "\n" + info;
   document.getElementById("infoTexto").innerText = info;
-
   document.getElementById("titulo").innerText = tipo;
   document.getElementById("modeloCliente").innerText = modelo;
 
   document.getElementById("tela1").style.display="none";
   document.getElementById("tela2").style.display="block";
 
-  window.textoFinal = texto;
+  window.textoFinal = textoParaCopiar;
+
+  salvarNoHistorico({
+    data: new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
+    tipo: tipo,
+    modelo: modelo,
+    opcoes: opcoesParaSalvar
+  });
 }
 
+// --- LÓGICA DE HISTÓRICO ---
+
+function salvarNoHistorico(orcamento) {
+  let historico = JSON.parse(localStorage.getItem("historico") || "[]");
+  historico.unshift(orcamento); // Adiciona no início
+  localStorage.setItem("historico", JSON.stringify(historico));
+}
+
+function verHistorico() {
+  document.getElementById("tela1").style.display = "none";
+  document.getElementById("telaHistorico").style.display = "block";
+  renderHistorico();
+}
+
+function renderHistorico(filtro = "") {
+  let historico = JSON.parse(localStorage.getItem("historico") || "[]");
+  let container = document.getElementById("listaHistorico");
+  container.innerHTML = "";
+
+  let filtrados = historico.filter(item => 
+    item.modelo.toLowerCase().includes(filtro.toLowerCase()) || 
+    item.data.includes(filtro)
+  );
+
+  filtrados.forEach((item, index) => {
+    let div = document.createElement("div");
+    div.className = "bloco item-historico";
+    
+    let resumoOpcoes = item.opcoes.map(o => `${o.nome}: R$ ${o.valor}`).join(' | ');
+
+    div.innerHTML = `
+      <small>${item.data}</small><br>
+      <b>${item.tipo} - ${item.modelo}</b><br>
+      <span style="font-size:13px; color:#555">${resumoOpcoes}</span><br>
+      <button class="btn-excluir" onclick="excluirItem(${index})">Remover</button>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function filtrarHistorico() {
+  let busca = document.getElementById("buscaHistorico").value;
+  renderHistorico(busca);
+}
+
+function excluirItem(index) {
+  if(confirm("Deseja excluir este registro?")) {
+    let historico = JSON.parse(localStorage.getItem("historico") || "[]");
+    historico.splice(index, 1);
+    localStorage.setItem("historico", JSON.stringify(historico));
+    renderHistorico();
+  }
+}
+
+// --- UTILITÁRIOS ---
+
 function copiar(){
-  navigator.clipboard.writeText(window.textoFinal);
-  alert("Copiado!");
+  navigator.clipboard.writeText(window.textoFinal).then(() => {
+    alert("Copiado para a área de transferência!");
+  });
 }
 
 function novo(){
   location.reload();
 }
 
+// Inicia com uma linha
 adicionarLinha();
 
 </script>
